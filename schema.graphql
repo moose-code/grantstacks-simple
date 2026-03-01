@@ -1,0 +1,170 @@
+enum ApplicationStatus {
+  NONE
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+  IN_REVIEW
+}
+
+enum ProjectType {
+  canonical
+  linked
+  program
+}
+
+enum RoundRoleName {
+  admin
+  manager
+}
+
+enum ProjectRoleName {
+  owner
+  member
+}
+
+type Round {
+  id: ID!
+  chainId: Int!
+  matchAmount: BigInt!
+  matchTokenAddress: String!
+  matchAmountInUsd: String!
+  fundedAmount: BigInt!
+  fundedAmountInUsd: String!
+  applicationMetadataCid: String!
+  applicationMetadata: Json
+  roundMetadataCid: String
+  roundMetadata: Json
+  applicationsStartTime: String
+  applicationsEndTime: String
+  donationsStartTime: String
+  donationsEndTime: String
+  createdByAddress: String!
+  createdAtBlock: BigInt!
+  updatedAtBlock: BigInt!
+  totalAmountDonatedInUsd: String!
+  totalDonationsCount: Int!
+  totalDistributed: BigInt!
+  uniqueDonorsCount: Int!
+  managerRole: String! @index
+  adminRole: String! @index
+  strategyAddress: String! @index
+  strategyId: String!
+  strategyName: String!
+  readyForPayoutTransaction: String
+  matchingDistribution: Json
+  project: Project!
+  tags: [String!]!
+  timestamp: String!
+  applications: [Application!]! @derivedFrom(field: "round")
+  donations: [Donation!]! @derivedFrom(field: "round")
+  applicationPayouts: [ApplicationPayout!]! @derivedFrom(field: "round")
+  roles: [RoundRole!]! @derivedFrom(field: "round")
+}
+
+type Project {
+  id: ID!
+  name: String!
+  nonce: BigInt
+  anchorAddress: String @index
+  chainId: Int!
+  projectNumber: Int
+  registryAddress: String!
+  metadataCid: String
+  metadata: Json
+  createdByAddress: String!
+  createdAtBlock: BigInt!
+  updatedAtBlock: BigInt!
+  tags: [String!]!
+  projectType: ProjectType!
+  timestamp: String!
+  roles: [ProjectRole!]! @derivedFrom(field: "project")
+  applications: [Application!]! @derivedFrom(field: "project")
+}
+
+type Application {
+  id: ID!
+  chainId: Int!
+  round: Round! @index
+  project: Project!
+  anchorAddress: String @index
+  status: ApplicationStatus!
+  statusSnapshots: Json!
+  distributionTransaction: String
+  metadataCid: String
+  metadata: Json
+  createdByAddress: String!
+  createdAtBlock: BigInt!
+  statusUpdatedAtBlock: BigInt!
+  totalDonationsCount: Int!
+  totalAmountDonatedInUsd: String!
+  uniqueDonorsCount: Int!
+  timestamp: String!
+  tags: [String!]!
+  donations: [Donation!]! @derivedFrom(field: "application")
+  applicationPayouts: [ApplicationPayout!]! @derivedFrom(field: "application")
+}
+
+type Donation {
+  id: ID!
+  chainId: Int!
+  round: Round!
+  application: Application
+  donorAddress: String! @index
+  recipientAddress: String!
+  project: Project!
+  transactionHash: String!
+  blockNumber: BigInt!
+  tokenAddress: String!
+  amount: BigInt!
+  amountInUsd: String!
+  amountInRoundMatchToken: BigInt!
+  timestamp: String!
+}
+
+type ApplicationPayout {
+  id: ID!
+  chainId: Int!
+  round: Round!
+  application: Application!
+  amount: BigInt!
+  tokenAddress: String!
+  amountInUsd: String!
+  amountInRoundMatchToken: BigInt!
+  transactionHash: String!
+  timestamp: String!
+}
+
+type RoundRole {
+  id: ID!
+  chainId: Int!
+  round: Round!
+  address: String!
+  role: RoundRoleName!
+  createdAtBlock: BigInt!
+}
+
+type ProjectRole {
+  id: ID!
+  chainId: Int!
+  project: Project!
+  address: String!
+  role: ProjectRoleName!
+  createdAtBlock: BigInt!
+}
+
+type PendingRoundRole {
+  id: ID!
+  chainId: Int!
+  role: String! @index
+  address: String!
+  createdAtBlock: BigInt!
+}
+
+type PendingProjectRole {
+  id: ID!
+  chainId: Int!
+  role: String! @index
+  address: String!
+  createdAtBlock: BigInt!
+}
