@@ -269,6 +269,13 @@ Strategy.AllocatedWithOrigin.handler(async ({ event, context }) => {
   const donEntityId = donationId(chainId, hash);
   const donorAddress = getAddress(event.params.origin);
 
+  // Check if this donor is new to the round/application
+  const existingDonations = await context.Donation.getWhere({ donorAddress: { _eq: donorAddress } });
+  const isNewDonorForRound = !existingDonations.some((d: any) => d.round_id === round.id);
+  const isNewDonorForApp = application
+    ? !existingDonations.some((d: any) => d.application_id === application.id)
+    : false;
+
   context.Donation.set({
     id: donEntityId,
     chainId,
@@ -292,6 +299,7 @@ Strategy.AllocatedWithOrigin.handler(async ({ event, context }) => {
     ...round,
     totalDonationsCount: round.totalDonationsCount + 1,
     totalAmountDonatedInUsd: (currentDonatedUsd + parseFloat(amountInUsd)).toString(),
+    uniqueDonorsCount: round.uniqueDonorsCount + (isNewDonorForRound ? 1 : 0),
     updatedAtBlock: BigInt(event.block.number),
   });
 
@@ -302,6 +310,7 @@ Strategy.AllocatedWithOrigin.handler(async ({ event, context }) => {
       ...application,
       totalDonationsCount: application.totalDonationsCount + 1,
       totalAmountDonatedInUsd: (appDonatedUsd + parseFloat(amountInUsd)).toString(),
+      uniqueDonorsCount: application.uniqueDonorsCount + (isNewDonorForApp ? 1 : 0),
     });
   }
 });
@@ -420,6 +429,10 @@ Strategy.DirectAllocated.handler(async ({ event, context }) => {
   const donEntityId = donationId(chainId, hash);
   const donorAddress = getAddress(event.params.sender);
 
+  // Check if this donor is new to the round
+  const existingDonations = await context.Donation.getWhere({ donorAddress: { _eq: donorAddress } });
+  const isNewDonorForRound = !existingDonations.some((d: any) => d.round_id === round.id);
+
   context.Donation.set({
     id: donEntityId,
     chainId,
@@ -443,6 +456,7 @@ Strategy.DirectAllocated.handler(async ({ event, context }) => {
     ...round,
     totalDonationsCount: round.totalDonationsCount + 1,
     totalAmountDonatedInUsd: (currentDonatedUsd + parseFloat(amountInUsd)).toString(),
+    uniqueDonorsCount: round.uniqueDonorsCount + (isNewDonorForRound ? 1 : 0),
     updatedAtBlock: BigInt(event.block.number),
   });
 });

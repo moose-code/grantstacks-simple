@@ -38,7 +38,7 @@ export const tokenPricingEffect = createEffect({
   },
   output: S.nullable(S.schema({ priceUsd: S.number })),
   cache: true,
-  rateLimit: { calls: 10, per: "second" },
+  rateLimit: { calls: 5, per: "second" },
 }, async ({ input }) => {
   try {
     const { tokenCode, timestampMs } = input;
