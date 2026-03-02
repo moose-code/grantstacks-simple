@@ -27,7 +27,9 @@ export const ipfsMetadataEffect = createEffect({
       clearTimeout(timeout);
 
       if (response.ok) {
-        return await response.text(); // Return raw JSON string
+        const text = await response.text();
+        // Strip null bytes and other invalid Unicode that PostgreSQL rejects
+        return text.replace(/\0/g, "").replace(/\\u0000/g, "");
       }
     } catch {
       continue;
